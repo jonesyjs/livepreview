@@ -7,15 +7,15 @@ export interface DemoPageData {
   __typename: string;
   title: string;
   slug: string;
-  boby: { json: unknown };
-  image: {
-    sys: { id: string };
-    __typename: string;
-    url: string;
-    title: string;
-    width: number;
-    height: number;
-  };
+  boby?: { json: unknown } | null;
+  image?: {
+    sys?: { id: string };
+    __typename?: string;
+    url?: string;
+    title?: string;
+    width?: number;
+    height?: number;
+  } | null;
 }
 
 export function DemoPage({ data }: { data: DemoPageData }) {
@@ -35,12 +35,12 @@ export function DemoPage({ data }: { data: DemoPageData }) {
         /{page.slug}
       </p>
 
-      {page.image && (
+      {page.image?.url && (
         <div className="mb-8 overflow-hidden rounded-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={page.image.url.startsWith("//") ? `https:${page.image.url}` : page.image.url}
-            alt={page.image.title}
+            alt={page.image.title ?? ""}
             className="w-full"
           />
         </div>

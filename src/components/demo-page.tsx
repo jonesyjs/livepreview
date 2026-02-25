@@ -34,6 +34,20 @@ export function DemoPage({ data }: { data: DemoPageData }) {
   // over the element in the preview, they see an "edit" button that
   // jumps them to that exact field in the Contentful editor.
   // NOTE - like live updates, this is a no-op when enableInspectorMode is false.
+  //
+  // ALTERNATIVE (Premium plan only): Content Source Maps
+  // Instead of manually tagging every element with inspectorProps, Contentful
+  // can embed invisible Unicode characters (steganography) in text responses
+  // that the SDK reads to automatically map elements to fields.
+  //
+  // To enable:
+  //   GraphQL — add @contentSourceMaps directive: query @contentSourceMaps { ... }
+  //   REST    — set includeContentSourceMaps: true on the preview client
+  //
+  // With Content Source Maps, text fields (title, slug, body) would NOT need
+  // inspectorProps — the SDK tags them automatically. However, non-text fields
+  // (images, references, booleans) still require manual inspectorProps.
+  // Only works with the Preview API, not Delivery.
   const inspectorProps = useContentfulInspectorMode({ entryId: data.sys.id });
 
   return (

@@ -4,6 +4,8 @@ import {
   useContentfulLiveUpdates,
   useContentfulInspectorMode,
 } from "@contentful/live-preview/react";
+import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import type { Document } from "@contentful/rich-text-types";
 
 export interface DemoPageData {
   sys: { id: string };
@@ -78,13 +80,15 @@ export function DemoPage({ data }: { data: DemoPageData }) {
         </div>
       )}
 
+      {/* Rich text: Contentful returns rich text as a JSON document (Document type).
+          documentToReactComponents() converts that JSON into React elements. */}
       <div
         className="prose dark:prose-invert"
         {...inspectorProps({ fieldId: "boby" })}
       >
-        <p className="text-zinc-600 dark:text-zinc-300">
-          [Rich text body renders here]
-        </p>
+        {page.boby?.json
+          ? documentToReactComponents(page.boby.json as Document)
+          : null}
       </div>
     </article>
   );

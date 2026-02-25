@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Contentful Live Preview Demo
 
-## Getting Started
+A demo app showing how the `@contentful/live-preview` SDK works with Next.js. Demonstrates real-time content updates and inspector mode (click-to-edit) inside the Contentful editor.
 
-First, run the development server:
+## What this demos
+
+- **`useContentfulLiveUpdates`** — real-time content updates as editors type in Contentful
+- **`useContentfulInspectorMode`** — click-to-edit buttons that jump editors to the correct field
+- **GraphQL content fetching** — querying Contentful's GraphQL API with encoding (`sys { id }`, `__typename`)
+- **Rich text rendering** — converting Contentful's rich text JSON to React components
+
+## Setup
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/jonesyjs/livepreview.git
+cd livepreview
+npm install
+```
+
+### 2. Create a `.env` file
+
+```
+CONTENTFUL_SPACE_ID=your_space_id
+CONTENTFUL_ACCESS_TOKEN=your_delivery_token
+CONTENTFUL_PREVIEW_ACCESS_TOKEN=your_preview_token
+```
+
+Get these from **Contentful dashboard > Settings > API Keys**.
+
+### 3. Create the content model
+
+In Contentful, create a content type with ID `livePreviewTestBlog` and these fields:
+
+| Field | Type |
+|-------|------|
+| Title | Short text |
+| Slug | Short text |
+| Boby | Rich text |
+| Image | Media |
+
+Create and **publish** at least one entry with slug `test`.
+
+### 4. Run the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000/graphql/test` to see your entry.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 5. Set up Contentful preview URL
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+In Contentful go to **Settings > Content Preview** and create a preview platform with URL:
 
-## Learn More
+```
+https://your-deployed-url.com/graphql/{entry.fields.slug}
+```
 
-To learn more about Next.js, take a look at the following resources:
+> Note: Live preview requires your app to be accessible via HTTPS (e.g. deployed to Vercel). Localhost won't work inside Contentful's iframe due to browser private network restrictions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 6. Deploy to Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm install -g vercel
+vercel --prod
+```
 
-## Deploy on Vercel
+Add the env variables in the Vercel dashboard under **Settings > Environment Variables**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    layout.tsx                  # Wraps app in ContentfulPreviewProvider
+    graphql/[slug]/page.tsx     # Page route — fetches and renders entry
+  components/
+    contentful-preview-provider.tsx  # Client wrapper for the SDK provider
+    demo-page.tsx               # Client component with both hooks
+  lib/
+    contentful-graphql.ts       # GraphQL fetching layer
+    contentful-rest.ts          # REST fetching layer (for reference)
+```
+
+## Key concepts
+
+- **Encoding** — GraphQL queries must include `sys { id }` and `__typename` so the SDK can match live updates to the correct entry. The REST SDK does this automatically.
+- **postMessage bridge** — the SDK communicates between Contentful's editor and your site (loaded in an iframe) using the browser's `postMessage` API. No WebSockets or server needed.
+- **Content Source Maps** (premium) — an alternative to manual `inspectorProps` that uses invisible Unicode characters to automatically tag text fields.

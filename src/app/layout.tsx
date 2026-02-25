@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { draftMode } from "next/headers";
 import { ContentfulPreviewProvider } from "@/components/contentful-preview-provider";
 import "./globals.css";
 
@@ -19,22 +18,21 @@ export const metadata: Metadata = {
   description: "Contentful Live Preview SDK demo",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isEnabled } = await draftMode();
-
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Hardcoded to true for demo — in production, tie these to draftMode().isEnabled */}
         <ContentfulPreviewProvider
           locale="en-US"
-          enableLiveUpdates={isEnabled}
-          enableInspectorMode={isEnabled}
+          enableLiveUpdates={true}
+          enableInspectorMode={true}
         >
           {children}
         </ContentfulPreviewProvider>

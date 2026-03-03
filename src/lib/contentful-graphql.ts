@@ -87,10 +87,12 @@ export async function getDemoPageBySlug(
 ) {
   let timelineDirective = "";
   if (timeline?.releaseId || timeline?.timestamp) {
-    const whereParts: string[] = [];
-    if (timeline.releaseId) whereParts.push(`release_lte: "${timeline.releaseId}"`);
-    if (timeline.timestamp) whereParts.push(`timestamp_lte: "${timeline.timestamp}"`);
-    timelineDirective = ` @timeline(where: { ${whereParts.join(", ")} })`;
+    // When a releaseId is present, use only that — adding timestamp_lte
+    // alongside an unscheduled release causes an API error.
+    const whereClause = timeline.releaseId
+      ? `release_lte: "${timeline.releaseId}"`
+      : `timestamp_lte: "${timeline.timestamp}"`;
+    timelineDirective = ` @timeline(where: { ${whereClause} })`;
   }
 
   const data = await fetchGraphQL(

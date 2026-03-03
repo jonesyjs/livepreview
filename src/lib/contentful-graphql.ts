@@ -90,7 +90,7 @@ export async function getDemoPageBySlug(
     const whereParts: string[] = [];
     if (timeline.releaseId) whereParts.push(`release_lte: "${timeline.releaseId}"`);
     if (timeline.timestamp) whereParts.push(`timestamp_lte: "${timeline.timestamp}"`);
-    timelineDirective = ` @timeline(where: { ${whereParts.join(", ")} }, preview: true)`;
+    timelineDirective = ` @timeline(where: { ${whereParts.join(", ")} })`;
   }
 
   const data = await fetchGraphQL(

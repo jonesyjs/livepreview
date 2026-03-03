@@ -13,6 +13,11 @@ const GRAPHQL_ENDPOINT = `https://graphql.contentful.com/content/v1/spaces/${SPA
  * - preview = false → uses Delivery token (published content only)
  * - preview = true  → uses Preview token (draft + published content)
  */
+export interface TimelineParams {
+  releaseId?: string;
+  timestamp?: string;
+}
+
 async function fetchGraphQL(query: string, preview = false) {
   const res = await fetch(GRAPHQL_ENDPOINT, {
     method: "POST",
@@ -75,16 +80,28 @@ export async function getDemoPages(preview = false) {
   return data.livePreviewTestBlogCollection.items;
 }
 
-export async function getDemoPageBySlug(slug: string, preview = false) {
+export async function getDemoPageBySlug(
+  slug: string,
+  preview = false,
+  timeline?: TimelineParams
+) {
+  let timelineDirective = "";
+  if (timeline?.releaseId || timeline?.timestamp) {
+    const whereParts: string[] = [];
+    if (timeline.releaseId) whereParts.push(`release_lte: "${timeline.releaseId}"`);
+    if (timeline.timestamp) whereParts.push(`timestamp_lte: "${timeline.timestamp}"`);
+    timelineDirective = ` @timeline(where: { ${whereParts.join(", ")} }, preview: true)`;
+  }
+
   const data = await fetchGraphQL(
-    `{
-      livePreviewTestBlogCollection(where: { slug: "${slug}" }, limit: 1, preview: ${preview}) {
+    `query${timelineDirective} {
+      livePreviewTestBlogCollection(where: { slug: "${slug}" }, limit: 1, preview: ${preview || !!timelineDirective}) {
         items {
           ${DEMO_PAGE_FIELDS}
         }
       }
     }`,
-    preview
+    preview || !!timelineDirective
   );
 
   return data.livePreviewTestBlogCollection.items[0] ?? null;
